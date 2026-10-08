@@ -1,0 +1,922 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Substitute It! Formula game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFDFF; --grid:#DFEAF6; --ink:#1B2A6B; --ink-soft:#56639A; --line:#C3D0EA;
+  --hi:#FFE45C; --hi-ink:#1B2A6B; --red:#D23232; --green:#14905A; --margin:#F2A0A0;
+  --key:#FFFFFF; --key-edge:#BCC8E6; --panel:#EEF3FB; --gold:#E3A400; --gold-deep:#B07A00;
+  --sub:#A9D8FF; --sub2:#FFA8D5; --sub-ink:#14204F;
+  --ui:'Bricolage Grotesque', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --math:'STIX Two Text', 'Cambria Math', Cambria, 'Times New Roman', serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1730; --grid:#1A2647; --ink:#E4EAFF; --ink-soft:#A3AFD8; --line:#2C3A6A;
+    --hi:#E9CF3A; --hi-ink:#14204F; --red:#FF7070; --green:#3DD598; --margin:#7A3A4A;
+    --key:#18224A; --key-edge:#2E3C70; --panel:#141E3D; --gold:#FFC93C; --gold-deep:#C99412;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1730; --grid:#1A2647; --ink:#E4EAFF; --ink-soft:#A3AFD8; --line:#2C3A6A;
+  --hi:#E9CF3A; --hi-ink:#14204F; --red:#FF7070; --green:#3DD598; --margin:#7A3A4A;
+  --key:#18224A; --key-edge:#2E3C70; --panel:#141E3D; --gold:#FFC93C; --gold-deep:#C99412;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%}
+body{
+  margin:0;min-height:100%;color:var(--ink);font-family:var(--ui);font-size:17px;line-height:1.5;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.m{font-family:var(--math)}
+i{font-style:italic;padding:0 .02em}
+.m i, .math i{font-family:var(--math)}
+sup{font-size:.62em;line-height:0}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 18px 40px}
+[hidden]{display:none!important}
+
+/* stacked fractions */
+.frac{display:inline-flex;flex-direction:column;align-items:stretch;vertical-align:middle;text-align:center;font-size:.86em;line-height:1.15;margin:0 .12em}
+.frac .nu{border-bottom:.09em solid currentColor;padding:0 .2em .06em}
+.frac .de{padding:.06em .2em 0}
+.ph{opacity:.45}
+.var{border-radius:5px;padding:0 .16em;background:var(--sub);color:var(--sub-ink)}
+.var.v2{background:var(--sub2)}
+.dbl{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:.22em}
+
+/* header */
+header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:6px 0 14px;border-bottom:2px solid var(--ink);margin-bottom:20px}
+.brand{font-weight:800;font-size:1.35rem;letter-spacing:-.02em;margin:0;white-space:nowrap}
+.brand span{font-family:var(--math);font-style:italic;font-weight:600}
+.progress{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex:1;min-width:0;flex-wrap:wrap}
+.progress li{width:30px;height:30px;border:2px solid var(--ink);border-radius:7px;display:grid;place-items:center;font-weight:600;font-size:.85rem;background:var(--paper)}
+.progress li.now{background:var(--hi);color:var(--hi-ink);border-color:var(--hi-ink)}
+.progress li.done{background:var(--ink);color:var(--paper)}
+.score{position:relative;display:flex;align-items:baseline;gap:8px;padding:4px 14px;border:2px solid var(--ink);border-radius:10px;background:var(--paper)}
+.score small{font-size:.8rem;color:var(--ink-soft)}
+.score b{font-size:1.5rem;font-variant-numeric:tabular-nums;min-width:2.5ch;text-align:right}
+.score b.neg{color:var(--red)}
+.float{position:absolute;right:10px;top:-6px;font-weight:800;font-size:1.1rem;pointer-events:none;animation:floatUp 1s ease-out forwards}
+.float.up{color:var(--green)} .float.down{color:var(--red)}
+@keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-34px)}}
+.linkbtn{background:none;border:none;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:var(--ink-soft);padding:4px}
+
+/* start */
+.start{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:24px 0}
+.hero{font-family:var(--math);font-size:clamp(1.6rem,4vw,2.6rem);line-height:1.25}
+.hero .when{font-family:var(--ui);font-size:.5em;color:var(--ink-soft);display:block;margin-bottom:.3em}
+.hero-work{display:grid;grid-template-columns:auto auto 1fr;column-gap:.3em;align-items:center;row-gap:.25em}
+.hero-work .eqs{color:var(--ink-soft)}
+.start h1{font-size:clamp(1.6rem,3.4vw,2.3rem);letter-spacing:-.02em;line-height:1.1;margin:22px 0 10px}
+.start p.lead{max-width:46ch;color:var(--ink-soft);margin:0 0 22px}
+.rules{background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:22px 24px}
+.rules h2{margin:0 0 10px;font-size:1.15rem}
+.rules ul{margin:0;padding-left:1.1em}
+.rules li{margin:6px 0}
+.pts-up{color:var(--green);font-weight:800}
+.pts-down{color:var(--red);font-weight:800}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);font-weight:800;font-size:1.05rem;padding:12px 22px;border-radius:12px;cursor:pointer;box-shadow:0 4px 0 var(--ink-soft);transition:transform .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink-soft)}
+.btn.ghost{background:var(--paper);color:var(--ink)}
+
+/* play */
+.play{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:28px;align-items:start}
+.sheet{position:relative;background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:22px 24px 26px 86px;min-height:380px}
+.sheet::before{content:"";position:absolute;left:72px;top:0;bottom:0;width:2px;background:var(--margin)}
+.qmeta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.qmeta h2{margin:0;font-size:1.3rem;letter-spacing:-.01em}
+.src{font-size:.9rem;color:var(--ink-soft)}
+.src.follow{color:var(--red);font-weight:600}
+.tip{color:var(--ink-soft);margin:4px 0 14px;font-size:.95rem}
+.prompt{font-size:1.15rem;padding:10px 0 14px;border-bottom:1px dashed var(--line);margin-bottom:8px;line-height:2}
+.prompt i.m{font-size:1.35em}
+.prompt .math{font-family:var(--math);font-size:1.35em;white-space:nowrap}
+.when{font-weight:600;padding:10px 0 2px;font-size:1.1rem}
+.when .math{font-family:var(--math);font-size:1.3em;font-weight:400}
+.work{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;column-gap:0;align-items:center}
+.row .lhs,.row .eqs{padding-right:.4em}
+.row .ex{padding-right:.6em}
+.row{display:contents}
+.row > *{padding:9px 0;border-bottom:1px dashed var(--line);min-height:3.6rem;display:flex;align-items:center}
+.row .lhs{font-family:var(--math);font-size:1.7rem;justify-content:flex-end;position:relative}
+.row .lhs i{font-style:italic}
+.row .eqs{font-family:var(--math);font-size:1.7rem;color:var(--ink-soft)}
+.row .ex{font-family:var(--math);font-size:1.7rem;gap:.35em;flex-wrap:wrap}
+.row .note{font-size:.88rem;color:var(--ink-soft);text-align:right;justify-content:flex-end}
+.row.cur .note{color:var(--ink);font-weight:600}
+.row.future > *{opacity:.5}
+.row.future .ex{font-family:var(--ui);font-size:1rem;letter-spacing:.2em}
+.mg{position:absolute;left:-80px;width:62px;text-align:right;font-family:var(--ui);font-size:.78rem;font-weight:800;color:var(--ink-soft);line-height:1.2;white-space:nowrap}
+.row.done .mg{color:var(--green)}
+.row.cur .mg span{display:inline-block;text-align:center;background:var(--hi);color:var(--hi-ink);padding:2px 7px;border-radius:6px}
+.typing{min-width:4ch;display:inline-flex;align-items:center;border-bottom:2px solid var(--ink);padding:2px 4px;background:var(--panel);min-height:1.6em}
+.caret{display:inline-block;width:2px;height:1em;background:var(--ink);vertical-align:-.1em;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+svg.mark{width:28px;height:28px;flex:none}
+svg.mark path{fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40}
+.row.new svg.mark path{animation:draw .35s ease-out}
+svg.tick path{stroke:var(--green)}
+@keyframes draw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+.revealed{color:var(--ink-soft)}
+.wrongs{grid-column:3 / -1;font-size:.88rem;color:var(--red);padding:2px 0 6px}
+
+/* pad */
+.side{position:sticky;top:12px}
+.screen{background:var(--panel);border:2px solid var(--ink);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+.screen .label{font-size:.82rem;color:var(--ink-soft)}
+.screen .val{font-family:var(--math);font-size:1.7rem;min-height:3rem;overflow-x:auto;white-space:nowrap;display:flex;align-items:center}
+.screen .val .eqs{color:var(--ink-soft);margin-right:.3em}
+.screen.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.feedback{min-height:1.5rem;margin:0 0 8px;font-weight:600}
+.feedback.ok{color:var(--green)} .feedback.bad{color:var(--red)} .feedback.note{color:var(--ink-soft)}
+.hint{background:var(--hi);color:var(--hi-ink);border-radius:10px;padding:10px 12px 10px 14px;margin:0 0 10px;font-size:.95rem;border-left:5px solid var(--hi-ink)}
+.hint b{display:block;font-size:.85rem}
+.hint .reveal{display:block;margin:6px 0 2px;font-family:var(--math);font-size:1.35rem}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.key{height:54px;border:2px solid var(--key-edge);background:var(--key);border-radius:12px;font-size:1.3rem;font-weight:600;cursor:pointer;box-shadow:0 3px 0 var(--key-edge);transition:transform .05s;touch-action:manipulation;user-select:none;-webkit-user-select:none;padding:0}
+.key:active,.key.pressed{transform:translateY(2px);box-shadow:0 1px 0 var(--key-edge)}
+.key.op{font-family:var(--math);font-size:1.55rem}
+.key.fn{font-size:.95rem;color:var(--ink-soft)}
+.key.go{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:0 3px 0 var(--ink-soft);font-size:1rem;font-weight:800}
+.key sup{font-size:.6em}
+.key .ficon{display:inline-flex;flex-direction:column;align-items:center;font-size:.62em;line-height:1;gap:2px;vertical-align:middle}
+.key .ficon i{display:block;width:12px;height:9px;border:1.6px solid currentColor;border-radius:2px;padding:0}
+.key .ficon b{display:block;width:18px;border-top:2px solid currentColor}
+.typehelp{font-size:.82rem;color:var(--ink-soft);margin-top:10px}
+.result{border:2px solid var(--ink);border-radius:14px;padding:18px;background:var(--paper)}
+.result h3{margin:0 0 6px;font-size:1.25rem}
+.result p{margin:0 0 14px;color:var(--ink-soft)}
+.result.clean h3{color:var(--green)}
+.result.again h3{color:var(--red)}
+
+/* trophy */
+.win{text-align:center;padding:30px 0 10px}
+.win h1{font-size:clamp(2rem,5vw,3rem);margin:8px 0 4px;letter-spacing:-.02em}
+.win p{color:var(--ink-soft);margin:0 0 20px}
+.trophy{width:min(250px,60vw);height:auto;animation:rise .9s cubic-bezier(.2,1.4,.4,1)}
+@keyframes rise{from{transform:translateY(40px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:0 0 24px}
+.stat{border:2px solid var(--ink);border-radius:12px;padding:10px 18px;background:var(--paper);min-width:120px}
+.stat b{display:block;font-size:1.6rem}
+.stat span{font-size:.85rem;color:var(--ink-soft)}
+.win .cta{justify-content:center}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;padding:0;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (max-width:860px){
+  .start{grid-template-columns:1fr;gap:24px;padding:10px 0}
+  .play{grid-template-columns:1fr;gap:18px}
+  .side{position:static}
+  .sheet{padding:18px 14px 20px 70px;min-height:0}
+  .sheet::before{left:58px}
+  .mg{left:-66px;width:52px}
+  .work{grid-template-columns:auto auto minmax(0,1fr)}
+  .row .note{grid-column:3;border-bottom:1px dashed var(--line);justify-content:flex-start;text-align:left;min-height:0;padding:0 0 8px;margin-top:-1px}
+  .row .ex{border-bottom-color:transparent}
+  .row .lhs,.row .eqs{border-bottom-color:transparent}
+  .row .lhs,.row .eqs,.row .ex{font-size:1.45rem}
+}
+@media (max-width:640px){
+  header.top{gap:10px}
+  .brand{flex:1;font-size:1.1rem}
+  .score{order:3;padding:2px 10px;gap:6px}
+  .score b{font-size:1.25rem}
+  .progress{order:4;flex:0 0 100%;flex-wrap:nowrap}
+  .progress li{flex:1;width:auto}
+}
+@media (max-width:480px){
+  .wrap{padding:12px 10px 30px}
+  .progress li{height:26px;font-size:.78rem}
+  .key{height:50px;font-size:1.15rem}
+  .keys{gap:6px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
+  .confetti{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="brand">Substitute <span>it!</span></p>
+    <ol class="progress" id="progress" aria-label="Question types"></ol>
+    <div class="score" aria-live="polite"><small>Score</small><b id="score">0</b></div>
+  </header>
+
+  <section id="startView" class="start">
+    <div>
+      <div class="hero" id="hero" aria-label="Worked example: when b = −6, A = 2 − (−6)/2 = 2 − (−3) = 2 + 3 = 5"></div>
+      <h1>Find the value of a formula by substitution.</h1>
+      <p class="lead">Replace each letter with its number, then work it out one line at a time, just like in your homework. Six question types, from simple formulas to negatives and squares.</p>
+      <div class="cta">
+        <button class="btn" id="startBtn" type="button">Start the game</button>
+      </div>
+    </div>
+    <div class="rules">
+      <h2>How it works</h2>
+      <ul>
+        <li>The first line is the substitution: write the formula with the numbers in place of the letters. Each line after starts with <b>=</b>.</li>
+        <li>Correct line: <span class="pts-up">+10</span>. A line with the wrong value: <span class="pts-down">−10</span> and you get a hint.</li>
+        <li>If your line has the right value but isn’t the step asked for, you get a tip and lose nothing.</li>
+        <li>Put negative numbers in brackets, like 3 × (−4). The fraction key divides, and shows 6 ÷ 2 as a fraction.</li>
+        <li>Make a mistake and you’ll answer one more question of the same type. Finish a question with no mistakes to clear the type. Clear all 6 to win the trophy.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="playView" class="play" hidden>
+    <div class="sheet" id="sheet"></div>
+    <aside class="side">
+      <div id="padArea">
+        <div class="screen" id="screen"><div class="label" id="screenLabel">Your line</div><div class="val" id="screenVal"></div></div>
+        <p class="feedback" id="feedback" aria-live="polite"></p>
+        <div class="hint" id="hint" hidden></div>
+        <div class="keys">
+          <button class="key" data-k="7" type="button">7</button>
+          <button class="key" data-k="8" type="button">8</button>
+          <button class="key" data-k="9" type="button">9</button>
+          <button class="key op" data-k="(" type="button" aria-label="open bracket">(</button>
+          <button class="key op" data-k=")" type="button" aria-label="close bracket">)</button>
+          <button class="key" data-k="4" type="button">4</button>
+          <button class="key" data-k="5" type="button">5</button>
+          <button class="key" data-k="6" type="button">6</button>
+          <button class="key op" data-k="*" type="button" aria-label="times">×</button>
+          <button class="key op" data-k="/" type="button" aria-label="divide, shown as a fraction"><span class="ficon"><i></i><b></b><i></i></span></button>
+          <button class="key" data-k="1" type="button">1</button>
+          <button class="key" data-k="2" type="button">2</button>
+          <button class="key" data-k="3" type="button">3</button>
+          <button class="key op" data-k="+" type="button" aria-label="plus">+</button>
+          <button class="key op" data-k="-" type="button" aria-label="minus">−</button>
+          <button class="key" data-k="0" type="button">0</button>
+          <button class="key fn" data-k="^" type="button" aria-label="power">x<sup>n</sup></button>
+          <button class="key fn" data-k="back" type="button" aria-label="Delete">⌫</button>
+          <button class="key fn" data-k="clear" type="button">Clear</button>
+          <button class="key go" data-k="enter" type="button">Check</button>
+        </div>
+        <p class="typehelp">The fraction key divides: 6, fraction, 2 gives 6 over 2. For a fraction with a sum on top, put the top in brackets first. Keyboard works too: / for fractions, ^ for powers, Enter to check.</p>
+      </div>
+      <div id="resultArea" hidden></div>
+    </aside>
+  </section>
+
+  <section id="winView" class="win" hidden>
+    <svg class="trophy" viewBox="0 0 200 220" role="img" aria-label="Gold trophy">
+      <path d="M52 30 H20 c0 40 14 62 44 66" fill="none" stroke="var(--gold-deep)" stroke-width="10" stroke-linecap="round"/>
+      <path d="M148 30 H180 c0 40 -14 62 -44 66" fill="none" stroke="var(--gold-deep)" stroke-width="10" stroke-linecap="round"/>
+      <path d="M48 18 H152 V60 c0 36 -22 62 -52 62 s-52 -26 -52 -62 Z" fill="var(--gold)" stroke="var(--gold-deep)" stroke-width="5"/>
+      <path d="M70 34 c-2 22 4 44 18 58" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/>
+      <rect x="88" y="120" width="24" height="34" fill="var(--gold-deep)"/>
+      <rect x="62" y="152" width="76" height="16" rx="4" fill="var(--gold)" stroke="var(--gold-deep)" stroke-width="4"/>
+      <rect x="44" y="168" width="112" height="36" rx="6" fill="var(--ink)"/>
+      <text x="100" y="192" text-anchor="middle" font-family="STIX Two Text, serif" font-size="16" fill="var(--paper)"><tspan font-style="italic">b</tspan> = −6 → <tspan font-style="italic">A</tspan> = 5</text>
+      <text x="100" y="78" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="30" fill="var(--gold-deep)">6/6</text>
+    </svg>
+    <h1>All question types cleared!</h1>
+    <p>You can substitute into any formula now.</p>
+    <div class="stats" id="stats"></div>
+    <div class="cta">
+      <button class="btn" id="againBtn" type="button">Play again</button>
+    </div>
+  </section>
+</div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script>
+/* ---------- Algebra engine: polynomials as Map(key -> {c, m}) ---------- */
+const mkey = m => Object.keys(m).filter(v=>m[v]).sort().map(v=>v+m[v]).join('');
+const EPS = 1e-9;
+const P = {
+  num(c){ const p=new Map(); if(Math.abs(c)>EPS) p.set('',{c,m:{}}); return p; },
+  vr(v){ return new Map([[v+'1',{c:1,m:{[v]:1}}]]); },
+  add(a,b){
+    const r=new Map(); for(const [k,t] of a) r.set(k,{c:t.c,m:t.m});
+    for(const [k,t] of b){ const c=(r.has(k)?r.get(k).c:0)+t.c; if(Math.abs(c)<EPS) r.delete(k); else r.set(k,{c,m:t.m}); }
+    return r;
+  },
+  neg(a){ const r=new Map(); for(const [k,t] of a) r.set(k,{c:-t.c,m:t.m}); return r; },
+  mul(a,b){
+    let r=new Map();
+    for(const [,x] of a) for(const [,y] of b){ const m={...x.m}; for(const v in y.m) m[v]=(m[v]||0)+y.m[v]; r=P.add(r,new Map([[mkey(m),{c:x.c*y.c,m}]])); }
+    return r;
+  },
+  isConst(a){ for(const k of a.keys()) if(k!=='') return false; return true; },
+  cval(a){ return a.has('')?a.get('').c:0; },
+  div(a,b){
+    if(!P.isConst(b)) throw new Error('Divide by numbers only');
+    const d=P.cval(b); if(Math.abs(d)<EPS) throw new Error('Divide by zero');
+    const r=new Map(); for(const [k,t] of a) r.set(k,{c:t.c/d,m:t.m}); return r;
+  },
+  pow(a,e){
+    if(!P.isConst(e)) throw new Error('Bad power');
+    const n=P.cval(e); if(!Number.isInteger(Math.round(n*1e6)/1e6)||n<0||n>12) throw new Error('Bad power');
+    let r=P.num(1); for(let i=0;i<Math.round(n);i++) r=P.mul(r,a); return r;
+  },
+  eq(a,b){ const d=P.add(a,P.neg(b)); for(const [,t] of d) if(Math.abs(t.c)>1e-7) return false; return true; }
+};
+
+function tokenize(str){
+  const s=String(str).replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/\s+/g,'');
+  const t=[]; let i=0;
+  while(i<s.length){
+    const ch=s[i];
+    if(/\d/.test(ch)){ let j=i; while(j<s.length&&/[\d.]/.test(s[j])) j++; t.push({k:'n',v:parseFloat(s.slice(i,j))}); i=j; }
+    else if(/[a-z]/i.test(ch)){ t.push({k:'v',v:ch.toLowerCase()}); i++; }
+    else if('+-*/^()'.includes(ch)){ t.push({k:ch}); i++; }
+    else throw new Error('Unknown symbol');
+  }
+  return t;
+}
+
+function parse(str){
+  const t=tokenize(str); let i=0;
+  if(!t.length) throw new Error('Empty');
+  const peek=()=>t[i];
+  function expr(){ let v=term(); while(peek()&&(peek().k==='+'||peek().k==='-')){ const op=t[i++].k; const r=term(); v=op==='+'?P.add(v,r):P.add(v,P.neg(r)); } return v; }
+  function term(){
+    let v=unary();
+    for(;;){ const p=peek(); if(!p) break;
+      if(p.k==='*'){ i++; v=P.mul(v,unary()); }
+      else if(p.k==='/'){ i++; v=P.div(v,unary()); }
+      else if(p.k==='v'||p.k==='('||p.k==='n'){ v=P.mul(v,power()); }
+      else break; }
+    return v;
+  }
+  function unary(){ const p=peek(); if(p&&p.k==='-'){ i++; return P.neg(unary()); } if(p&&p.k==='+'){ i++; return unary(); } return power(); }
+  function power(){ let b=primary(); if(peek()&&peek().k==='^'){ i++; b=P.pow(b,unary()); } return b; }
+  function primary(){
+    const p=t[i++]; if(!p) throw new Error('Unfinished');
+    if(p.k==='n') return P.num(p.v);
+    if(p.k==='v') return P.vr(p.v);
+    if(p.k==='('){ const v=expr(); if(!peek()||peek().k!==')') throw new Error('Missing )'); i++; return v; }
+    throw new Error('Unexpected');
+  }
+  const v=expr(); if(i<t.length) throw new Error('Unexpected'); return v;
+}
+
+/* returns null if the typed answer is in simplest form, otherwise a message */
+function simplestFormIssue(str){
+  const t=tokenize(str);
+  if(t.some(x=>'*/()'.includes(x.k))) return "Write the answer without ×, ÷ or brackets.";
+  const keys=new Set(); let i=0, first=true;
+  while(i<t.length){
+    if(t[i].k==='+'||t[i].k==='-') i++; else if(!first) return "Something is out of place in your answer.";
+    first=false;
+    if(i<t.length&&(t[i].k==='+'||t[i].k==='-')) return "You have two signs in a row. Keep just one.";
+    const m={}; let any=false;
+    if(i<t.length&&t[i].k==='n'){ any=true; i++; if(t[i]&&t[i].k==='^') return "Work out the number power first."; }
+    while(i<t.length&&t[i].k==='v'){
+      const v=t[i].v; if(m[v]) return `Use a power instead of repeating a letter, e.g. ${v}×${v} is ${v}².`;
+      i++; let e=1;
+      if(t[i]&&t[i].k==='^'){ i++; if(!t[i]||t[i].k!=='n') return "Type a number for the power."; e=t[i].v; i++; }
+      m[v]=e; any=true;
+    }
+    if(!any) return "Your answer is unfinished.";
+    if(i<t.length&&t[i].k==='n') return "Put the number in front of the letters.";
+    const k=mkey(m); if(keys.has(k)) return "There are still like terms to collect."; keys.add(k);
+  }
+  return null;
+}
+
+/* ---------- Pretty printing ---------- */
+function pretty(expr, withCaretBox){
+  let out='', prev='';
+  for(let i=0;i<expr.length;i++){
+    const ch=expr[i];
+    if(ch===' ') continue;
+    if('+-*/'.includes(ch)){
+      const sym={'+':'+','-':'−','*':'×','/':'÷'}[ch];
+      out += (prev && /[a-z0-9)]/i.test(prev)) ? ` ${sym} ` : sym;
+    } else if(ch==='^'){
+      let j=i+1, d=''; while(j<expr.length&&/\d/.test(expr[j])) d+=expr[j++];
+      out += d ? `<sup>${d}</sup>` : (withCaretBox ? '<sup style="opacity:.5">□</sup>' : '');
+      i=j-1; prev='0'; continue;
+    } else if(/[a-z]/i.test(ch)) out+=`<i>${ch}</i>`;
+    else out+=ch;
+    prev=ch;
+  }
+  return out;
+}
+const fnum = c => String(Math.round(c*10000)/10000);
+function fmtPoly(p){
+  const terms=[...p.values()];
+  if(!terms.length) return '0';
+  const deg=t=>Object.values(t.m).reduce((a,b)=>a+b,0);
+  const vk=t=>Object.keys(t.m).sort().join('');
+  terms.sort((a,b)=>deg(b)-deg(a)||vk(a).localeCompare(vk(b)));
+  let s='';
+  terms.forEach((t,idx)=>{
+    const neg=t.c<0, a=Math.abs(t.c), vars=Object.keys(t.m).filter(v=>t.m[v]).sort();
+    const body = vars.length
+      ? (Math.abs(a-1)<EPS?'':fnum(a)) + vars.map(v=>`<i>${v}</i>`+(t.m[v]>1?`<sup>${t.m[v]}</sup>`:'')).join('')
+      : fnum(a);
+    s += idx===0 ? (neg?'−':'')+body : (neg?' − ':' + ')+body;
+  });
+  return s;
+}
+/* ---------- Question bank ----------
+   f: [subject, formula]   v: values to substitute   r: worksheet reference (blank = new)
+   L: lines of working, each written after "=":  [expression, step name, hint, flags]
+      flags "o" = this line may be done in your head (skipping straight to the next line is fine) */
+const SUB="Substitute", MD="× and ÷ first", DV="Work out the fraction", RB="Remove the bracket",
+      CALC="Work it out", BR="Work out the bracket", TOP="Work out the top", PW="Work out the power";
+const RBM="Subtracting a negative is adding: − (− a number) becomes + that number.";
+const RBP="Adding a negative is subtracting: + (− a number) becomes − that number.";
+
+const TYPES = [
+{name:"Substituting a positive number", tip:"Replace the letter with its value. A number next to a letter means ×, so 3x becomes 3 × 4.", qs:[
+ {f:["y","3x-5"],v:{x:4},L:[["3*4-5",SUB,"Replace x with 4. 3x means 3 × x, so write 3 × 4."],["12-5",MD,"Multiply before you subtract: 3 × 4."],["7",CALC,"12 − 5."]]},
+ {f:["P","2a+7"],v:{a:6},L:[["2*6+7",SUB,"Replace a with 6. 2a becomes 2 × 6."],["12+7",MD,"Multiply before you add: 2 × 6."],["19",CALC,"12 + 7."]]},
+ {f:["C","40-5n"],v:{n:3},L:[["40-5*3",SUB,"Replace n with 3. 5n becomes 5 × 3."],["40-15",MD,"Multiply before you subtract: 5 × 3."],["25",CALC,"40 − 15."]]},
+ {f:["V","4k+9"],v:{k:8},L:[["4*8+9",SUB,"Replace k with 8. 4k becomes 4 × 8."],["32+9",MD,"Multiply before you add: 4 × 8."],["41",CALC,"32 + 9."]]},
+ {f:["T","50-6m"],v:{m:7},L:[["50-6*7",SUB,"Replace m with 7. 6m becomes 6 × 7."],["50-42",MD,"Multiply before you subtract: 6 × 7."],["8",CALC,"50 − 42."]]},
+ {f:["Q","3(p+2)"],v:{p:5},L:[["3*(5+2)",SUB,"Replace p with 5 and keep the bracket: 3 × (5 + 2)."],["3*7",BR,"Work out the bracket first: 5 + 2."],["21",CALC,"3 × 7."]]}
+]},
+{name:"Substituting a negative number", tip:"Put a negative value in brackets when you substitute it, so 3x becomes 3 × (−4).", qs:[
+ {f:["y","3x-5"],v:{x:-4},L:[["3*(-4)-5",SUB,"Replace x with (−4), in brackets: 3 × (−4)."],["-12-5",MD,"Positive × negative = negative."],["-17",CALC,"−12 − 5 goes further below zero."]]},
+ {f:["P","2a+7"],v:{a:-6},L:[["2*(-6)+7",SUB,"Replace a with (−6), in brackets: 2 × (−6)."],["-12+7",MD,"Positive × negative = negative."],["-5",CALC,"−12 + 7: start at −12 and go up 7."]]},
+ {f:["C","10-4n"],v:{n:-3},L:[["10-4*(-3)",SUB,"Replace n with (−3), in brackets: 4 × (−3)."],["10-(-12)",MD,"4 × (−3) is negative. Keep the minus in front and put the answer in brackets."],["10+12",RB,RBM,"o"],["22",CALC,"10 + 12."]]},
+ {f:["M","5-k"],v:{k:-8},L:[["5-(-8)",SUB,"Replace k with (−8), in brackets. Keep the minus in front."],["5+8",RB,RBM,"o"],["13",CALC,"5 + 8."]]},
+ {f:["R","6t+20"],v:{t:-5},L:[["6*(-5)+20",SUB,"Replace t with (−5), in brackets: 6 × (−5)."],["-30+20",MD,"Positive × negative = negative."],["-10",CALC,"−30 + 20: start at −30 and go up 20."]]},
+ {f:["W","7-2h"],v:{h:-9},L:[["7-2*(-9)",SUB,"Replace h with (−9), in brackets: 2 × (−9)."],["7-(-18)",MD,"2 × (−9) is negative. Keep the minus in front and put the answer in brackets."],["7+18",RB,RBM,"o"],["25",CALC,"7 + 18."]]}
+]},
+{name:"Formulas with a fraction", tip:"Substitute, then work out the fraction (divide) before you add or subtract.", qs:[
+ {r:"(a)",f:["A","2-b/2"],v:{b:6},L:[["2-6/2",SUB,"Replace b with 6. The fraction becomes 6 over 2."],["2-3",DV,"Work out the fraction: 6 ÷ 2."],["-1",CALC,"2 − 3 goes below zero."]]},
+ {f:["B","5+c/3"],v:{c:12},L:[["5+12/3",SUB,"Replace c with 12. The fraction becomes 12 over 3."],["5+4",DV,"Work out the fraction: 12 ÷ 3."],["9",CALC,"5 + 4."]]},
+ {f:["D","10-m/4"],v:{m:8},L:[["10-8/4",SUB,"Replace m with 8. The fraction becomes 8 over 4."],["10-2",DV,"Work out the fraction: 8 ÷ 4."],["8",CALC,"10 − 2."]]},
+ {f:["E","k/5-4"],v:{k:15},L:[["15/5-4",SUB,"Replace k with 15. The fraction becomes 15 over 5."],["3-4",DV,"Work out the fraction: 15 ÷ 5."],["-1",CALC,"3 − 4 goes below zero."]]},
+ {f:["G","7-n/2"],v:{n:10},L:[["7-10/2",SUB,"Replace n with 10. The fraction becomes 10 over 2."],["7-5",DV,"Work out the fraction: 10 ÷ 2."],["2",CALC,"7 − 5."]]},
+ {f:["H","(p+4)/3"],v:{p:11},L:[["(11+4)/3",SUB,"Replace p with 11. The whole top goes in brackets when you type it: (11 + 4), then the fraction key, then 3."],["15/3",TOP,"Work out the top first: 11 + 4."],["5",CALC,"15 ÷ 3."]]}
+]},
+{name:"Fractions with a negative value", tip:"Put the negative value in brackets, work out the fraction, then deal with the signs.", qs:[
+ {r:"(b)",f:["A","2-b/2"],v:{b:-6},L:[["2-(-6)/2",SUB,"Replace b with (−6), in brackets. The fraction becomes (−6) over 2."],["2-(-3)",DV,"(−6) ÷ 2: negative ÷ positive is negative. Keep the minus in front and put the answer in brackets."],["2+3",RB,RBM,"o"],["5",CALC,"2 + 3."]]},
+ {f:["B","5+c/3"],v:{c:-12},L:[["5+(-12)/3",SUB,"Replace c with (−12), in brackets."],["5+(-4)",DV,"(−12) ÷ 3: negative ÷ positive is negative. Put the answer in brackets."],["5-4",RB,RBP,"o"],["1",CALC,"5 − 4."]]},
+ {f:["D","10-m/4"],v:{m:-8},L:[["10-(-8)/4",SUB,"Replace m with (−8), in brackets."],["10-(-2)",DV,"(−8) ÷ 4: negative ÷ positive is negative. Put the answer in brackets."],["10+2",RB,RBM,"o"],["12",CALC,"10 + 2."]]},
+ {f:["E","k/5-4"],v:{k:-15},L:[["(-15)/5-4",SUB,"Replace k with (−15), in brackets."],["-3-4",DV,"(−15) ÷ 5: negative ÷ positive is negative."],["-7",CALC,"−3 − 4 goes further below zero."]]},
+ {f:["G","1-n/2"],v:{n:-10},L:[["1-(-10)/2",SUB,"Replace n with (−10), in brackets."],["1-(-5)",DV,"(−10) ÷ 2: negative ÷ positive is negative. Put the answer in brackets."],["1+5",RB,RBM,"o"],["6",CALC,"1 + 5."]]},
+ {f:["H","(p+4)/3"],v:{p:-10},L:[["(-10+4)/3",SUB,"Replace p with −10. The whole top goes in brackets when you type it: (−10 + 4), then the fraction key, then 3."],["(-6)/3",TOP,"Work out the top first: −10 + 4."],["-2",CALC,"Negative ÷ positive is negative."]]}
+]},
+{name:"Formulas with two letters", tip:"Substitute every letter with its own value. Put negative values in brackets.", qs:[
+ {f:["P","2a-3b"],v:{a:4,b:-2},L:[["2*4-3*(-2)",SUB,"Replace a with 4 and b with (−2): 2 × 4 − 3 × (−2)."],["8-(-6)",MD,"Work out 2 × 4 and 3 × (−2). Keep the minus in front of the second term."],["8+6",RB,RBM,"o"],["14",CALC,"8 + 6."]]},
+ {f:["Q","4y+x"],v:{y:3,x:-5},L:[["4*3+(-5)",SUB,"Replace y with 3 and x with (−5), in brackets."],["12+(-5)",MD,"4 × 3."],["12-5",RB,RBP,"o"],["7",CALC,"12 − 5."]]},
+ {f:["S","5m+2n"],v:{m:-3,n:4},L:[["5*(-3)+2*4",SUB,"Replace m with (−3) and n with 4."],["-15+8",MD,"5 × (−3) is negative. 2 × 4 is positive."],["-7",CALC,"−15 + 8: start at −15 and go up 8."]]},
+ {f:["T","a/b+3"],v:{a:12,b:-4},L:[["12/(-4)+3",SUB,"Replace a with 12 and b with (−4). The fraction becomes 12 over (−4)."],["-3+3",DV,"12 ÷ (−4): positive ÷ negative is negative."],["0",CALC,"−3 + 3."]]},
+ {f:["V","3x-y"],v:{x:2,y:-7},L:[["3*2-(-7)",SUB,"Replace x with 2 and y with (−7). Keep the minus in front of y."],["6-(-7)",MD,"3 × 2.","o"],["6+7",RB,RBM],["13",CALC,"6 + 7."]]},
+ {f:["K","2(p-q)"],v:{p:3,q:-5},L:[["2*(3-(-5))",SUB,"Replace p with 3 and q with (−5). Keep the outer bracket: 2 × (3 − (−5))."],["2*(3+5)",RB,RBM,"o"],["2*8",BR,"Work out the bracket: 3 + 5."],["16",CALC,"2 × 8."]]}
+]},
+{name:"Squares and powers", tip:"Keep a negative value in brackets before the power: (−2)² = (−2) × (−2) = 4.", qs:[
+ {f:["E","x^2-3x"],v:{x:-2},L:[["(-2)^2-3*(-2)",SUB,"Replace x with (−2) in both places. Keep the bracket before the power: (−2)². Type ), then xⁿ, then 2."],["4-(-6)",PW,"(−2)² = (−2) × (−2) is positive. 3 × (−2) is negative."],["4+6",RB,RBM,"o"],["10",CALC,"4 + 6."]]},
+ {f:["F","2y^2+1"],v:{y:3},L:[["2*3^2+1",SUB,"Replace y with 3: 2y² becomes 2 × 3²."],["2*9+1",PW,"Powers come before ×: 3² = 3 × 3.","o"],["18+1",MD,"2 × 9."],["19",CALC,"18 + 1."]]},
+ {f:["G","k^2+5"],v:{k:-4},L:[["(-4)^2+5",SUB,"Replace k with (−4), keeping the bracket: (−4)²."],["16+5",PW,"(−4)² = (−4) × (−4), and negative × negative is positive."],["21",CALC,"16 + 5."]]},
+ {f:["H","10-n^2"],v:{n:-3},L:[["10-(-3)^2",SUB,"Replace n with (−3), keeping the bracket: (−3)². The minus in front of n² stays."],["10-9",PW,"(−3)² = (−3) × (−3) = 9. The minus in front stays."],["1",CALC,"10 − 9."]]},
+ {f:["J","m^3+2"],v:{m:-2},L:[["(-2)^3+2",SUB,"Replace m with (−2), keeping the bracket: (−2)³."],["-8+2",PW,"(−2)³ = (−2) × (−2) × (−2). Three negatives multiply to a negative."],["-6",CALC,"−8 + 2."]]},
+ {f:["L","3t^2-t"],v:{t:-1},L:[["3*(-1)^2-(-1)",SUB,"Replace t with (−1) in both places: 3 × (−1)² − (−1)."],["3*1-(-1)",PW,"(−1)² = (−1) × (−1) = 1.","o"],["3+1",MD,"3 × 1, and − (−1) becomes + 1."],["4",CALC,"3 + 1."]]}
+]}
+];
+/* ---------- Checking a line of working ---------- */
+const norm = s => String(s).replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/\s+/g,'').toLowerCase().replace(/^\+/,'');
+
+/* split at top-level + and − into signed terms */
+function splitTerms(str){
+  const s=norm(str), out=[]; let depth=0, cur='', sign=1, prev='';
+  for(const ch of s){
+    if(depth===0 && (ch==='+'||ch==='-')){
+      if(cur!=='' && /[a-z0-9)]/i.test(prev)){ out.push({sign,body:cur}); sign=ch==='-'?-1:1; cur=''; prev=ch; continue; }
+      if(cur===''){ if(ch==='-') sign=-sign; prev=ch; continue; }
+    }
+    if(ch==='(') depth++; else if(ch===')') depth--;
+    cur+=ch; prev=ch;
+  }
+  out.push({sign,body:cur});
+  return out;
+}
+const termPoly = t => t.sign<0 ? P.neg(parse(t.body)) : parse(t.body);
+const isSimpleBody = b => b!=='' && !/[()*\/]/.test(b) && simplestFormIssue(b)===null;
+
+/* split a term's body into factors at top-level × and ÷ (and implied × beside brackets) */
+function factorsOf(body){
+  const out=[]; let depth=0, cur='', div=false;
+  const push=()=>{ if(cur) out.push({div,str:cur}); cur=''; div=false; };
+  for(const ch of body){
+    if(depth===0 && (ch==='*'||ch==='/')){ push(); div=ch==='/'; continue; }
+    if(depth===0 && cur && ((ch==='(' && /[a-z0-9)]/i.test(cur.slice(-1))) || (cur.endsWith(')') && /[a-z0-9]/i.test(ch)))){ const d=div; push(); div=false; }
+    if(ch==='(') depth++; else if(ch===')') depth--;
+    cur+=ch;
+  }
+  push(); return out;
+}
+function stripParens(s){
+  while(s.startsWith('(') && s.endsWith(')')){
+    let d=0, whole=true;
+    for(let i=0;i<s.length;i++){ if(s[i]==='(') d++; else if(s[i]===')') d--; if(d===0 && i<s.length-1){ whole=false; break; } }
+    if(!whole) break; s=s.slice(1,-1);
+  }
+  return s;
+}
+function factorSimple(str){ let s=stripParens(str); if(/^[+-]/.test(s)) s=s.slice(1); return s!=='' && !/[()*\/+\-]/.test(s) && simplestFormIssue(s)===null; }
+function polyKeyAbs(p){
+  const e=[...p.entries()].sort((a,b)=>a[0]<b[0]?-1:1);
+  const flip = e.length && e[0][1].c<0 ? -1 : 1;
+  return e.map(([k,t])=>k+':'+Math.round(t.c*flip*1e6)/1e6).join('|');
+}
+const factorSig = f => (f.div?'/':'*') + polyKeyAbs(parse(f.str)) + (factorSimple(f.str)?'s':'c');
+
+function termMatch(a,b){
+  if(!P.eq(termPoly(a),termPoly(b))) return false;
+  const as=isSimpleBody(a.body), bs=isSimpleBody(b.body);
+  if(as!==bs) return false;
+  if(as) return true;
+  const fa=factorsOf(a.body).map(factorSig).sort().join(','), fb=factorsOf(b.body).map(factorSig).sort().join(',');
+  return fa===fb;
+}
+function likeKey(t){
+  const p=termPoly(t);
+  if(p.size===0) return '0';
+  if(p.size===1) return [...p.keys()][0];
+  throw new Error('mixed');
+}
+function adjacent(terms){
+  const keys=terms.map((t,i)=>{ try{ return likeKey(t); }catch(e){ return 'mix'+i; } });
+  const seen=new Set();
+  for(let i=0;i<keys.length;i++){ if(i>0 && keys[i]===keys[i-1]) continue; if(seen.has(keys[i])) return false; seen.add(keys[i]); }
+  return true;
+}
+/* numbers written together and letters written together in one product */
+function productGrouped(t){
+  const fs=factorsOf(t.body); if(fs.length<2) return false;
+  const cls=[];
+  for(const f of fs){
+    let s=stripParens(f.str); if(/^[+-]/.test(s)) s=s.slice(1);
+    if(/^\d+(\.\d+)?$/.test(s)) cls.push('n');
+    else if(/^([a-z](\^\d+)?)+$/.test(s)) cls.push('l');
+    else return false;
+  }
+  let changes=0; for(let i=1;i<cls.length;i++) if(cls[i]!==cls[i-1]) changes++;
+  return changes<=1;
+}
+function lineMatch(input, expected, flags){
+  try{
+    const g=(flags||'').includes('g');
+    const pt=splitTerms(input), et=splitTerms(expected);
+    if(g && et.length===1) return pt.length===1 && productGrouped(pt[0]) && P.eq(parse(input),parse(expected));
+    if(pt.length!==et.length) return false;
+    const used=et.map(()=>false);
+    for(const p of pt){ const j=et.findIndex((e,k)=>!used[k] && termMatch(p,e)); if(j<0) return false; used[j]=true; }
+    return g ? adjacent(pt) : true;
+  }catch(e){ return false; }
+}
+
+/* ---------- Stricter structural check for substitution lines ----------
+   Each term gets a signature that keeps signs, brackets and the order of operations,
+   but ignores the order of terms and of factors. */
+function topLevelPow(str){ let d=0; for(const ch of str){ if(ch==='(') d++; else if(ch===')') d--; else if(ch==='^'&&d===0) return true; } return false; }
+const cval = p => Math.round(P.cval(p)*1e6)/1e6;
+function termSig(t){
+  if(isSimpleBody(t.body)) return 'v'+cval(termPoly(t));
+  return (t.sign<0?'-':'+')+'['+factorsOf(t.body).map(factorSig2).sort().join(',')+']';
+}
+function factorSig2(f){
+  const d=f.div?'/':'*';
+  if(topLevelPow(f.str) && !(f.str.startsWith('(') && stripParens(f.str)!==f.str && !topLevelPow(stripParens(f.str)) && f.str.endsWith(')'))) return d+'^'+norm(f.str);
+  const inner=stripParens(f.str), ts=splitTerms(inner);
+  if(ts.length>1) return d+'g('+ts.map(termSig).sort().join(',')+')';
+  const t=ts[0];
+  if(isSimpleBody(t.body)) return d+'n'+cval(termPoly(t));
+  return d+'t'+termSig(t);
+}
+function sigLineMatch(input, expected){
+  try{
+    const a=splitTerms(input).map(termSig).sort().join('|');
+    const b=splitTerms(expected).map(termSig).sort().join('|');
+    return a===b;
+  }catch(e){ return false; }
+}
+const unbracketedNeg = raw => /[*\/^+\-]-/.test(norm(raw));
+
+/* ---------- Display: stacked fractions, brackets, powers ----------
+   '|' in the string marks the typing caret. */
+const CARET='<span class="caret"></span>', BOX='<span class="ph">□</span>';
+function renderMath(src, typing){
+  const s=String(src).replace(/\s+/g,'').replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-');
+  let i=0;
+  function atomAt(allowSign){
+    let pre='';
+    if(allowSign && s[i]==='-'){ pre='−'; i++; }
+    const ch=s[i]; let a=null;
+    if(ch===undefined) return pre?{h:pre+(typing?BOX:'')}:null;
+    if(/\d/.test(ch)){ let j=i; while(j<s.length&&/[\d.]/.test(s[j])) j++; a={h:s.slice(i,j)}; i=j; }
+    else if(/[a-z]/i.test(ch)){ a={h:`<i>${ch}</i>`}; i++; }
+    else if(ch==='|'){ i++; return {h:pre+CARET}; }
+    else if(ch==='('){
+      i++; const inner=seq(true); let closed=false;
+      if(s[i]===')'){ i++; closed=true; }
+      a={h:'('+inner.h+(closed?')':''), group:true, innerH:inner.h, sum:inner.sum, closed};
+    } else return pre?{h:pre}:null;
+    if(s[i]==='^'){
+      i++; let d=''; while(i<s.length&&/\d/.test(s[i])) d+=s[i++];
+      let cur=''; if(s[i]==='|'){ cur=CARET; i++; }
+      a.h += d ? `<sup>${d}${cur}</sup>` : (typing?`<sup>${BOX}${cur}</sup>`:'');
+      a.group=false;
+    }
+    if(s[i]==='|'){ a.h+=CARET; i++; }
+    if(pre){ a.h=pre+a.h; a.group=false; }
+    return a;
+  }
+  const strip = a => (a.group && a.sum && a.closed) ? a.innerH : a.h;
+  function seq(inParen){
+    const out=[]; let sum=false, prev='start';
+    while(i<s.length){
+      const ch=s[i];
+      if(ch===')'){ if(inParen) break; i++; out.push({k:'a',h:')'}); prev='atom'; continue; }
+      if(ch==='+'||ch==='-'){
+        i++; const unary = prev!=='atom'; if(!unary) sum=true;
+        out.push({k:unary?'u':'o', h:ch==='+'?'+':'−'}); prev='op'; continue;
+      }
+      if(ch==='*'){ i++; out.push({k:'o',h:'×'}); prev='op'; continue; }
+      if(ch==='/'){
+        i++;
+        const num = prev==='atom' ? out.pop() : {h:typing?BOX:''};
+        const den = atomAt(true);
+        const dh = den ? strip(den) : (typing?BOX:'');
+        out.push({k:'a',h:`<span class="frac"><span class="nu">${strip(num)}</span><span class="de">${dh}</span></span>`});
+        prev='atom'; continue;
+      }
+      const a=atomAt(false); if(!a){ i++; continue; }
+      if(prev==='atom'){ const p=out.pop(); out.push({k:'a',h:p.h+a.h}); }
+      else out.push({k:'a',...a});
+      prev='atom';
+    }
+    return {h:out.map(c=>c.k==='o'?` ${c.h} `:c.h).join(''), sum};
+  }
+  return seq(false).h;
+}
+const fmtNum = n => String(n).replace('-','−');
+const subst = (formula, v) => formula.replace(/[a-z]/g, c => '('+v[c]+')');
+const valuesText = v => Object.keys(v).map(k=>`<i>${k}</i> = ${fmtNum(v[k])}`).join(' and ');
+
+/* ---------- Game ---------- */
+const $=s=>document.querySelector(s);
+const TICK='<svg class="mark tick" viewBox="0 0 24 24" aria-label="correct"><path d="M4 13l5 5L20 6"/></svg>';
+let S=null, lastView='startView';
+const flagsOf = ln => ln[3]||'';
+
+/* highlight the letters being substituted */
+function hlVars(html, v){
+  Object.keys(v).forEach((k,idx)=>{ html=html.split(`<i>${k}</i>`).join(`<span class="var${idx?' v2':''}"><i>${k}</i></span>`); });
+  return html;
+}
+const formulaHTML = q => `<i>${q.f[0]}</i> = ${hlVars(renderMath(q.f[1]), q.v)}`;
+const whenHTML = q => Object.keys(q.v).map((k,idx)=>`<span class="var${idx?' v2':''}"><i>${k}</i></span> = ${fmtNum(q.v[k])}`).join(' and ');
+
+function newState(){
+  return {t:0, score:0, right:0, wrong:0, answered:0, cleared:[], used:TYPES.map(()=>new Set()),
+          q:null, qi:-1, target:null, step:0, rows:[], tries:0, stuck:0, mistakes:0, input:'',
+          follow:false, revealed:false, done:false};
+}
+function show(id){
+  ['startView','playView','winView'].forEach(v=>$('#'+v).hidden = v!==id);
+  window.scrollTo(0,0);
+}
+function renderProgress(){
+  $('#progress').innerHTML = TYPES.map((ty,i)=>{
+    const done = S && S.cleared.includes(i);
+    const cls = done ? 'done' : (S && i===S.t && !$('#playView').hidden ? 'now' : '');
+    return `<li class="${cls}" title="${ty.name}">${done?'✓':i+1}</li>`;
+  }).join('');
+}
+const showNum = n => String(n).replace('-','−');
+function renderScore(){ const b=$('#score'); b.textContent = S?showNum(S.score):0; b.classList.toggle('neg', !!S && S.score<0); }
+function floatScore(txt, up){
+  const f=document.createElement('span'); f.className='float '+(up?'up':'down'); f.textContent=txt;
+  $('.score').appendChild(f); setTimeout(()=>f.remove(),1000);
+}
+
+function startGame(){ S=newState(); show('playView'); loadQuestion(false); }
+
+function pickQuestion(ti, follow){
+  const qs=TYPES[ti].qs, used=S.used[ti];
+  let pool=qs.map((_,i)=>i).filter(i=>!used.has(i));
+  if(!pool.length){ used.clear(); pool=qs.map((_,i)=>i).filter(i=>i!==S.qi); }
+  const pref = follow ? pool.filter(i=>!qs[i].r) : pool.filter(i=>qs[i].r);
+  if(pref.length) pool=pref;
+  const i=pool[Math.floor(Math.random()*pool.length)]; used.add(i); return i;
+}
+
+function loadQuestion(follow){
+  S.qi=pickQuestion(S.t, follow);
+  S.q=TYPES[S.t].qs[S.qi];
+  S.target=parse(subst(S.q.f[1], S.q.v));
+  Object.assign(S,{step:0,rows:[],tries:0,stuck:0,mistakes:0,input:'',follow,revealed:false,done:false});
+  $('#padArea').hidden=false; $('#resultArea').hidden=true;
+  setFeedback('', ''); hideHint();
+  renderProgress(); renderScore(); renderSheet();
+}
+
+const stepName = i => S.q.L[i][1];
+function renderSheet(){
+  const ty=TYPES[S.t], q=S.q, L=q.L, last=L.length-1;
+  const src = S.follow ? '<span class="src follow">One more question of this type</span>'
+            : `<span class="src">${q.r?`Worksheet example ${q.r}`:'New question'}</span>`;
+  let h=`<div class="qmeta"><h2>Type ${S.t+1} of ${TYPES.length}: ${ty.name}</h2>${src}</div>
+    <p class="tip">${ty.tip}</p>
+    <div class="prompt">Consider the formula <span class="math">${formulaHTML(q)}</span>.
+      Find the value of <i class="m">${q.f[0]}</i> when <span class="math">${whenHTML(q)}</span> by substitution.</div>
+    <div class="when">When <span class="math">${whenHTML(q)}</span>,</div>
+    <div class="work">`;
+  let lineNo=0;
+  const lhs = mg => `<span class="lhs">${mg}${lineNo++===0?`<i>${q.f[0]}</i>`:''}</span>`;
+  S.rows.forEach((r,ri)=>{
+    const a=r.steps[0]+1, b=r.steps[r.steps.length-1]+1;
+    const mg = `<span class="mg">${a===b?`Step<br>${a}`:`Steps<br>${a}–${b}`}</span>`;
+    const isFinal = r.steps.includes(last);
+    h+=`<div class="row done${ri===S.rows.length-1&&S.fresh?' new':''}">${lhs(mg)}<span class="eqs">=</span>
+        <span class="ex ${r.revealed?'revealed':''}"><span class="${isFinal?'dbl':''}">${renderMath(r.raw)}</span>${TICK}</span>
+        <span class="note">${r.steps.map((k,j)=>j?stepName(k).toLowerCase():stepName(k)).join(', then ')}</span></div>`;
+  });
+  if(!S.done){
+    h+=`<div class="row cur">${lhs(`<span class="mg"><span>Step<br>${S.step+1}</span></span>`)}<span class="eqs">=</span>
+        <span class="ex"><span class="typing" id="inlineTyping"></span></span>
+        <span class="note">${stepName(S.step)}</span></div>`;
+    if(S.tries) h+=`<span class="wrongs">${S.tries} wrong ${S.tries>1?'tries':'try'} on this line</span>`;
+    for(let j=S.step+1;j<L.length;j++){
+      h+=`<div class="row future">${lhs(`<span class="mg">Step<br>${j+1}</span>`)}<span class="eqs">=</span><span class="ex">……</span><span class="note">${stepName(j)}</span></div>`;
+    }
+  }
+  h+='</div>';
+  $('#sheet').innerHTML=h; S.fresh=false;
+  renderScreen();
+}
+
+function renderScreen(){
+  const h = renderMath(S.input+'|', true);
+  const lab = S.step===0 ? `<i>${S.q.f[0]}</i>&thinsp;` : '';
+  $('#screenVal').innerHTML = `<span class="eqs">${lab}=</span>` + h;
+  const it=$('#inlineTyping'); if(it) it.innerHTML = h;
+  $('#screenLabel').textContent = S.done ? 'Done' : `Step ${S.step+1} of ${S.q.L.length}: ${stepName(S.step)}`;
+}
+
+function setFeedback(msg, cls){ const f=$('#feedback'); f.textContent=msg; f.className='feedback '+(cls||''); }
+function showHint(html){ const h=$('#hint'); h.innerHTML=html; h.hidden=false; }
+function hideHint(){ $('#hint').hidden=true; }
+
+function press(k){
+  if(!S || S.done || $('#playView').hidden) return;
+  if(k==='enter') return submit();
+  if(k==='back') S.input=S.input.slice(0,-1);
+  else if(k==='clear') S.input='';
+  else if(k==='^'){
+    if(!/[0-9)]$/.test(S.input)){ setFeedback('Type a number or close a bracket first, then press xⁿ for the power.','note'); return; }
+    S.input+='^';
+  }
+  else if(S.input.length<40) S.input+=k;
+  renderScreen();
+}
+
+const lineOK = (raw,i) => sigLineMatch(raw, S.q.L[i][0]);
+const prevRaw = () => S.rows.length ? S.rows[S.rows.length-1].raw : S.q.f[1];
+
+function submit(){
+  const raw=S.input;
+  if(!raw.trim()){ setFeedback('Type this line first.','note'); return; }
+  let p;
+  try{ p=parse(raw); }catch(e){ setFeedback('This line is unfinished. Check the brackets and the last thing you typed.','note'); return; }
+  const i=S.step, L=S.q.L, ln=L[i];
+  if(!P.eq(p,S.target)) return lineWrong();
+  if(unbracketedNeg(raw)) return tip('Put negative numbers in brackets, like 3 × (−4) or 2 − (−3).');
+  if(norm(raw)===norm(prevRaw())) return tip('This is the same as the line above. Now do the next step: '+ln[1].toLowerCase()+'.');
+  if(lineOK(raw,i)) return accept(raw,[i]);
+  if(flagsOf(ln).includes('o') && i+1<L.length && lineOK(raw,i+1)) return accept(raw,[i,i+1]);
+  for(let j=i+1;j<L.length;j++) if(lineOK(raw,j))
+    return tip(`Your value is right, but you jumped ahead. Show this step first: ${ln[1].toLowerCase()}.`);
+  tip(i===0 ? "Your value is right, but write the formula with each letter replaced by its number." : "Your value is right, but this isn't the step asked for.");
+}
+
+function accept(raw, idx){
+  const pts = S.revealed ? 0 : 10*idx.length;
+  if(pts){ S.score+=pts; S.right+=idx.length; floatScore('+'+pts,true); setFeedback(`Correct! +${pts}`,'ok'); }
+  else setFeedback('That’s it. Keep going.','ok');
+  S.rows.push({raw, steps:idx, revealed:S.revealed}); S.fresh=true;
+  S.step=idx[idx.length-1]+1; S.tries=0; S.stuck=0; S.revealed=false; S.input=''; hideHint();
+  renderScore();
+  if(S.step>=S.q.L.length){ S.done=true; renderSheet(); finishQuestion(); }
+  else renderSheet();
+}
+
+function hintHTML(){
+  let h=`<b>Hint: ${stepName(S.step)}</b>${S.q.L[S.step][2]}`;
+  if(S.tries+S.stuck>=3){
+    S.revealed=true;
+    h+=`<span class="reveal">= ${renderMath(S.q.L[S.step][0])}</span>Type this line to move on.`;
+  }
+  return h;
+}
+function lineWrong(){
+  S.score-=10; S.wrong++; S.mistakes++; S.tries++;
+  floatScore('−10',false); renderScore();
+  const scr=$('#screen'); scr.classList.remove('shake'); void scr.offsetWidth; scr.classList.add('shake');
+  setFeedback('Not quite. That line has the wrong value. −10','bad');
+  showHint(hintHTML());
+  S.input=''; renderSheet();
+}
+function tip(msg){
+  S.stuck++;
+  setFeedback(msg,'note');
+  showHint(hintHTML());
+  S.input=''; renderSheet();
+}
+
+function finishQuestion(){
+  S.answered++;
+  const last = S.t===TYPES.length-1;
+  const ans = `<i>${S.q.f[0]}</i> = ${fmtNum(P.cval(S.target))}`;
+  let html;
+  if(S.mistakes===0){
+    S.cleared.push(S.t);
+    html=`<div class="result clean"><h3>Type cleared!</h3><p><span class="m">${ans}</span>. Every line right first time. ${last?'That was the last type.':'Next up: '+TYPES[S.t+1].name.toLowerCase()+'.'}</p>
+      <button class="btn" id="nextBtn" type="button">${last?'Collect your trophy':'Go to the next type'}</button></div>`;
+  } else {
+    html=`<div class="result again"><h3>${S.mistakes} mistake${S.mistakes>1?'s':''} on this question</h3>
+      <p><span class="m">${ans}</span>. Answer one more question of the same type. Finish it with no mistakes to clear this type.</p>
+      <button class="btn" id="nextBtn" type="button">Try one more</button></div>`;
+  }
+  $('#padArea').hidden=true; const ra=$('#resultArea'); ra.innerHTML=html; ra.hidden=false;
+  renderProgress();
+  $('#nextBtn').addEventListener('click',()=>{
+    if(S.mistakes===0){ if(last) return showWin(); S.t++; loadQuestion(false); }
+    else loadQuestion(true);
+    window.scrollTo({top:0});
+  });
+  $('#nextBtn').focus();
+}
+
+function showWin(){
+  show('winView'); renderProgress();
+  $('#stats').innerHTML = `
+    <div class="stat"><b>${showNum(S.score)}</b><span>Final score</span></div>
+    <div class="stat"><b>${S.right}</b><span>Correct lines</span></div>
+    <div class="stat"><b>${S.wrong}</b><span>Wrong lines</span></div>
+    <div class="stat"><b>${S.answered}</b><span>Questions answered</span></div>`;
+  const c=$('#confetti'); c.innerHTML='';
+  const cols=['var(--gold)','var(--sub)','var(--sub2)','var(--hi)','var(--ink)'];
+  for(let i=0;i<70;i++){
+    const e=document.createElement('i');
+    e.style.left=Math.random()*100+'vw'; e.style.background=cols[i%cols.length];
+    e.style.animationDuration=(2.2+Math.random()*2.2)+'s'; e.style.animationDelay=(Math.random()*.8)+'s';
+    c.appendChild(e);
+  }
+  setTimeout(()=>c.innerHTML='',5500);
+}
+
+
+function renderHero(){
+  const q=TYPES[3].qs[0];
+  const lines=q.L.map(l=>l[0]);
+  $('#hero').innerHTML = `<span class="when">When <span class="var"><i>b</i></span> = −6,</span><div class="hero-work">
+    <span><i>A</i></span><span class="eqs">=</span><span>${renderMath(lines[0])}</span>
+    ${lines.slice(1).map((l,j)=>`<span></span><span class="eqs">=</span><span>${j===lines.length-2?`<span class="dbl">${renderMath(l)}</span>`:renderMath(l)}</span>`).join('')}</div>`;
+}
+
+/* ---------- Wiring ---------- */
+document.addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) press(k.dataset.k); });
+document.addEventListener('keydown',e=>{
+  if($('#playView').hidden || !S || S.done) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key==='Enter' && e.target.closest && e.target.closest('button') && !e.target.classList.contains('key')) return;
+  let k=null;
+  if(/^[0-9]$/.test(e.key)) k=e.key;
+  else if('+*/()^'.includes(e.key)) k=e.key;
+  else if(e.key==='-'||e.key==='−') k='-';
+  else if(e.key==='Backspace') k='back';
+  else if(e.key==='Escape') k='clear';
+  else if(e.key==='Enter') k='enter';
+  if(!k) return;
+  e.preventDefault();
+  const btn=document.querySelector(`.key[data-k="${CSS.escape(k)}"]`);
+  if(btn){ btn.classList.add('pressed'); setTimeout(()=>btn.classList.remove('pressed'),90); }
+  press(k);
+});
+$('#startBtn').addEventListener('click',startGame);
+$('#againBtn').addEventListener('click',startGame);
+renderHero(); renderProgress(); renderScore();
+</script>
+</body>
+</html>
+
+</body></html>
